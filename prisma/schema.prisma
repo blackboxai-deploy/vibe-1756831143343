@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  role      UserRole  @default(USER)
+  tasks     Task[]    @relation("UserTasks")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model Client {
+  id          Int       @id @default(autoincrement())
+  name        String
+  company     String?
+  email       String?   @unique
+  phone       String?
+  status      ClientStatus @default(NEW)
+  notes       String?
+  tags        String[]
+  projects    Project[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum ClientStatus {
+  NEW
+  ACTIVE
+  INACTIVE
+}
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  client      Client    @relation(fields: [clientId], references: [id])
+  clientId    Int
+  status      ProjectStatus @default(PLANNING)
+  priority    ProjectPriority @default(MEDIUM)
+  startDate   DateTime?
+  dueDate     DateTime?
+  tasks       Task[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  project     Project   @relation(fields: [projectId], references: [id])
+  projectId   Int
+  assignee    User?     @relation("UserTasks", fields: [assigneeId], references: [id])
+  assigneeId  Int?
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus @default(PENDING)
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
